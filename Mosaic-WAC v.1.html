@@ -1,0 +1,645 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic-WAC: Enough Thinking, Time for Decisions</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        :root { 
+            --c-red: #d32f2f; 
+            --c-green: #2e7d32; 
+            --c-blue: #1565c0; 
+            --c-violet: #7b1fa2; 
+            --c-dark: #212121; 
+        }
+        
+        body { background-color: #eef2f6; font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 80px; }
+        
+        .header-bar { 
+            background: var(--c-dark); color: white; padding: 15px 0; 
+            border-bottom: 6px solid var(--c-blue); margin-bottom: 30px; 
+        }
+        
+        #visualizer-wrapper { 
+            background: white; border-radius: 16px; 
+            padding: 30px 20px 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            margin-top: 30px; 
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        
+        /* --- INDEX SQUARE (Grey Scale) --- */
+        .index-square { 
+            position: relative; 
+            width: 140px; height: 120px; /* slightly taller to fit the badge */
+            background: #808080; 
+            border: 6px solid black; 
+            border-radius: 16px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            z-index: 10; margin-bottom: 10px; 
+            transition: background-color 0.5s ease;
+        }
+        
+        .index-val { 
+            font-size: 3.5rem; 
+            font-weight: 900; color: black; 
+            -webkit-text-stroke: 1.5px white; 
+            paint-order: stroke fill; 
+            line-height: 1; margin: 0; padding: 0;
+        }
+        
+        .validity-badge {
+            font-size: 0.85rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; margin-top: 5px;
+            border: 2px solid black;
+        }
+
+        /* --- MOSAIC LAYOUT --- */
+        .mosaic-container { width: 100%; height: 420px; display: flex; gap: 12px; }
+        .box-left { flex: 45; } 
+        .right-stack { flex: 55; display: flex; flex-direction: column; gap: 12px; height: 100%; }
+        .box-green { flex: 25; } 
+        .box-blue { flex: 20; }  
+        .box-violet { flex: 10; } 
+
+        .wac-box { 
+            border: 5px solid black; border-radius: 12px; background: white; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            padding-top: 15px; transition: background 0.3s linear; 
+        }
+        
+        .m-label { 
+            font-size: 1.0rem; font-weight: 800; text-transform: uppercase; color: white; 
+            -webkit-text-stroke: 3.5px black; paint-order: stroke fill; margin-bottom: 5px; 
+        }
+        
+        .m-score { 
+            font-size: 3.5rem; font-weight: 900; color: white; 
+            -webkit-text-stroke: 4.5px black; paint-order: stroke fill; line-height: 1.1; 
+        }
+
+        .form-label { font-weight: 700; color: var(--c-dark); font-size: 0.9rem; }
+        .input-label-fix { min-height: 40px; display: flex; align-items: end; }
+        .form-control, .form-select { border: 2px solid #ccc; font-weight: 600; }
+        
+        .result-box { 
+            padding: 10px; font-weight: bold; border-radius: 6px; margin-top: 8px; 
+            font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .res-green { background: #e8f5e9; border-left: 5px solid var(--c-green); color: #1b5e20; }
+        .res-blue { background: #e3f2fd; border-left: 5px solid var(--c-blue); color: #0d47a1; }
+        .res-red { background: #ffebee; border-left: 5px solid var(--c-red); color: #b71c1c; }
+        
+        .custom-tabs { display: flex; border-bottom: 4px solid var(--c-dark); margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: #f0f0f0; font-weight: 800; color: #666; cursor: pointer; text-transform: uppercase; border-top: 5px solid transparent; }
+        .tab-btn.active { background: white; color: black; border-top-color: black; margin-bottom: -4px; border-bottom: 4px solid white; }
+        .tab-btn[data-target="red"].active { border-top-color: var(--c-red); color: var(--c-red); }
+        .tab-btn[data-target="green"].active { border-top-color: var(--c-green); color: var(--c-green); }
+        .tab-btn[data-target="blue"].active { border-top-color: var(--c-blue); color: var(--c-blue); }
+        .tab-btn[data-target="violet"].active { border-top-color: var(--c-violet); color: var(--c-violet); }
+        
+        .tab-content { display: none; padding: 25px; border: 4px solid var(--c-dark); background: white; border-radius: 0 0 12px 12px; }
+        .tab-content.active { display: block; animation: fade 0.3s; }
+        @keyframes fade { from{opacity:0;} to{opacity:1;} }
+        
+        .solid-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div class="header-bar text-center">
+    <h1><i class="fa-solid fa-layer-group"></i> Mosaic-WAC: Enough Thinking, Time for Decisions</h1>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-5 mb-5">
+            <input type="text" id="methodName" class="form-control mb-4 p-3" placeholder="METHOD NAME" style="border: 4px solid var(--c-dark); font-weight:900; text-transform:uppercase; font-size: 1.2rem;">
+
+            <div class="custom-tabs">
+                <button class="tab-btn active" onclick="switchTab('red')" data-target="red">Red</button>
+                <button class="tab-btn" onclick="switchTab('green')" data-target="green">Green</button>
+                <button class="tab-btn active" onclick="switchTab('blue')" data-target="blue">Blue</button>
+                <button class="tab-btn" onclick="switchTab('violet')" data-target="violet">Vio</button>
+            </div>
+            
+            <div id="red" class="tab-content active">
+                <h5 class="text-danger fw-bold border-bottom pb-2 mb-3">PERFORMANCE (45%)</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label">1. Method Target (Spec Limit)</label>
+                    <select id="r_spec" class="form-select trigger p-2">
+                        <option value="2.0">API / Assay (±2.0%)</option>
+                        <option value="5.0">Finished Product (±5.0%)</option>
+                        <option value="10.0">Related Substances (±10.0%)</option>
+                        <option value="20.0">Trace / Bioanalysis (±20.0%)</option>
+                    </select>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label">No. of Analytes</label>
+                        <input type="number" id="r_analytes" class="form-control trigger p-2" value="1" min="1">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Matrix Complexity</label>
+                        <select id="r_matrix" class="form-select trigger p-2">
+                            <option value="10">Pure Solvent</option>
+                            <option value="40">Tablet / Powder</option>
+                            <option value="70">Cream / Suspension</option>
+                            <option value="100">Blood / Soil</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <label class="form-label input-label-fix">Samples (n)</label>
+                        <input type="number" id="r_n" class="form-control trigger p-2" value="9" min="3">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label input-label-fix" style="font-size:0.8rem">Limiting Acc%</label>
+                        <input type="number" id="r_rec" class="form-control trigger p-2" value="99.28">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label input-label-fix" style="font-size:0.8rem">Limiting RSD%</label>
+                        <input type="number" id="r_rsd" class="form-control trigger p-2" value="6.44">
+                    </div>
+                </div>
+                
+                <div id="r_ti_res" class="result-box res-red mb-3">Calculating...</div>
+                
+                <div class="mb-3">
+                    <label class="form-label">2. Precision Context (HorRat)</label>
+                    <select id="r_conc" class="form-select trigger p-2">
+                        <option value="1">Major Component (100% - 1%)</option>
+                        <option value="0.001" selected>Minor Component (0.1% - ppm)</option>
+                        <option value="0.000001">Trace / Residue (ppb)</option>
+                    </select>
+                </div>
+                <div id="r_hor_res" class="result-box res-red">Calculating...</div>
+            </div>
+
+            <div id="green" class="tab-content">
+                <h5 class="text-success fw-bold border-bottom pb-2 mb-3">GREENNESS (25%)</h5>
+                
+                <label class="form-label fw-bold border-bottom w-100">Liquid Solvents</label>
+                <div class="row mb-1">
+                    <div class="col-7"><small class="text-muted">Solvent (Database)</small></div>
+                    <div class="col-5"><small class="text-muted">Vol (mL)</small></div>
+                </div>
+                <div id="solvent-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
+                <datalist id="solvent-list"></datalist> 
+
+                <label class="form-label fw-bold border-bottom w-100 mt-2">Solid Reagents</label>
+                <div class="row mb-1">
+                    <div class="col-4"><small class="text-muted">Name</small></div>
+                    <div class="col-3"><small class="text-muted">Mass(g)</small></div>
+                    <div class="col-3"><small class="text-muted">Hazard</small></div>
+                    <div class="col-2"><small class="text-muted">Cost($)</small></div>
+                </div>
+                <div id="solid-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;"></div>
+
+                <div class="result-box res-green mt-3" id="chem_summary">Calculating...</div>
+            </div>
+
+            <div id="blue" class="tab-content">
+                <h5 class="text-primary fw-bold border-bottom pb-2 mb-3">PRACTICALITY (20%)</h5>
+                <div class="mb-3">
+                    <label class="form-label">1. Instrument Type</label>
+                    <select id="b_inst" class="form-select trigger p-2">
+                        <option value="5">UV-Vis / Colorimeter</option>
+                        <option value="5">Voltammetry / Potentiometry</option>
+                        <option value="15">HPLC</option>
+                        <option value="25">GC / UHPLC</option>
+                        <option value="50">LC-MS / GC-MS</option>
+                        <option value="70">ICP-MS / NMR</option>
+                    </select>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6"><label class="form-label">Run Time (min)</label><input type="number" id="b_time" class="form-control trigger p-2" value="60"></div>
+                    <div class="col-6"><label class="form-label">Prep Time (min)</label><input type="number" id="b_prep_time" class="form-control trigger p-2" value="10"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Consumables / Amortized Parts ($)</label>
+                    <input type="number" id="b_consumables" class="form-control trigger p-2" placeholder="e.g. Column fraction or SPE price" value="0">
+                    <small class="text-muted">Cost per run for columns, cartridges, strips, filters.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">2. Sample Preparation</label>
+                    <select id="b_prep_type" class="form-select trigger p-2">
+                        <option value="100">Direct / Dilute</option>
+                        <option value="80">Filtration / Centrifuge</option>
+                        <option value="50">Extraction (SPE/LLE)</option>
+                        <option value="20">Derivatization / Evaporation</option>
+                    </select>
+                </div>
+                <div class="result-box res-blue" id="cost_summary">Calculating...</div>
+            </div>
+
+            <div id="violet" class="tab-content">
+                <h5 style="color:var(--c-violet)" class="fw-bold border-bottom pb-2 mb-3">INNOVATION (10%)</h5>
+                <div class="form-check mb-3"><input class="form-check-input violet-check trigger" type="checkbox" value="25" id="v1"><label class="form-check-label fw-bold" for="v1">AI / Machine Learning / AQbD</label></div>
+                <div class="form-check mb-3"><input class="form-check-input violet-check trigger" type="checkbox" value="25" id="v2"><label class="form-check-label fw-bold" for="v2">Novel Materials (Nano/MOF)</label></div>
+                <div class="form-check mb-3"><input class="form-check-input violet-check trigger" type="checkbox" value="25" id="v3"><label class="form-check-label fw-bold" for="v3">Miniaturized System</label></div>
+                <div class="form-check mb-3"><input class="form-check-input violet-check trigger" type="checkbox" value="25" id="v4"><label class="form-check-label fw-bold" for="v4">Smartphone Detection</label></div>
+            </div>
+
+            <button class="btn btn-outline-danger w-100 fw-bold mt-4 p-3 fs-6" onclick="generatePDF()"><i class="fa-solid fa-file-pdf"></i> GENERATE REPORT</button>
+        </div>
+
+        <div class="col-lg-7">
+            <div id="visualizer-wrapper">
+                <div class="index-square" id="index-sq">
+                    <span class="index-val" id="disp-total">0.0</span>
+                    <span id="validity-badge" class="validity-badge"></span>
+                </div>
+                <div class="mosaic-container" id="visualizer-area">
+                    <div class="wac-box box-left" id="vis-red"><span class="m-label">PERFORMANCE</span><span class="m-score" id="disp-red">0</span></div>
+                    <div class="right-stack">
+                        <div class="wac-box box-green" id="vis-green"><span class="m-label">Greenness</span><span class="m-score" id="disp-green">0</span></div>
+                        <div class="wac-box box-blue" id="vis-blue"><span class="m-label">Practical</span><span class="m-score" id="disp-blue">0</span></div>
+                        <div class="wac-box box-violet" id="vis-violet"><span class="m-label">Innovation</span><span class="m-score" id="disp-violet">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const solventDB = [
+        {name: "Water", hz: 0, price: 5},
+        {name: "Ethanol", hz: 1.0, price: 55},
+        {name: "1-Propanol", hz: 1.5, price: 60},
+        {name: "2-Propanol (IPA)", hz: 1.5, price: 45},
+        {name: "Acetone", hz: 1.2, price: 40},
+        {name: "Ethyl Acetate", hz: 1.5, price: 50},
+        {name: "Butyl Acetate", hz: 1.8, price: 55},
+        {name: "Anisole", hz: 2.0, price: 90},
+        {name: "Propylene Carbonate", hz: 1.5, price: 65},
+        {name: "Ethyl Lactate", hz: 1.5, price: 70},
+        {name: "Acetic Acid", hz: 2.0, price: 60},
+        {name: "Formic Acid", hz: 2.5, price: 80},
+        {name: "Glycerol", hz: 1.0, price: 40},
+        {name: "Dimethyl Carbonate", hz: 2.0, price: 65},
+        {name: "Methyl Ethyl Ketone (MEK)", hz: 3.0, price: 55},
+        {name: "Isobutanol", hz: 3.0, price: 60},
+        {name: "Methanol", hz: 3.5, price: 40},
+        {name: "Acetonitrile", hz: 4.5, price: 90},
+        {name: "Cyclohexane", hz: 4.0, price: 70},
+        {name: "Methylcyclohexane", hz: 4.0, price: 75},
+        {name: "Heptane", hz: 4.5, price: 90},
+        {name: "Methyl tert-butyl ether (MTBE)", hz: 4.0, price: 65},
+        {name: "Dimethyl Sulfoxide (DMSO)", hz: 3.0, price: 120},
+        {name: "2-Methyltetrahydrofuran (2-MeTHF)", hz: 3.5, price: 150},
+        {name: "p-Xylene", hz: 4.0, price: 60},
+        {name: "Isoamyl Alcohol", hz: 3.5, price: 70},
+        {name: "Benzyl Alcohol", hz: 3.0, price: 85},
+        {name: "Tetralin", hz: 4.5, price: 80},
+        {name: "Toluene", hz: 7.0, price: 50},
+        {name: "Xylene (mix)", hz: 7.0, price: 55},
+        {name: "Tetrahydrofuran (THF)", hz: 7.0, price: 100},
+        {name: "Pentane", hz: 6.5, price: 110},
+        {name: "Dichloromethane (DCM)", hz: 8.5, price: 50},
+        {name: "Diethyl Ether", hz: 7.5, price: 90},
+        {name: "Diisopropyl Ether", hz: 7.5, price: 100},
+        {name: "1,4-Dioxane", hz: 8.0, price: 120},
+        {name: "Dimethylformamide (DMF)", hz: 8.5, price: 85},
+        {name: "N-Methyl-2-pyrrolidone (NMP)", hz: 8.5, price: 95},
+        {name: "Pyridine", hz: 8.0, price: 180},
+        {name: "Triethylamine (TEA)", hz: 6.0, price: 120},
+        {name: "Chlorobenzene", hz: 7.5, price: 80},
+        {name: "Trifluoroacetic Acid (TFA)", hz: 7.0, price: 300},
+        {name: "Benzene", hz: 10.0, price: 150},
+        {name: "Chloroform", hz: 9.5, price: 110},
+        {name: "Carbon Tetrachloride", hz: 10.0, price: 200},
+        {name: "Hexane", hz: 8.5, price: 80},
+        {name: "1,2-Dichloroethane", hz: 10.0, price: 100},
+        {name: "Carbon Disulfide", hz: 10.0, price: 140},
+        {name: "Trichloroethylene", hz: 10.0, price: 120},
+        {name: "Nitrobenzene", hz: 9.0, price: 110}
+    ];
+
+    function getKFactor(n) {
+        if (n <= 3) return 5.31; if (n <= 4) return 4.16; if (n <= 5) return 3.50;
+        if (n <= 6) return 3.09; if (n <= 7) return 2.89; if (n <= 8) return 2.75;
+        if (n <= 9) return 2.63; if (n <= 10) return 2.57; if (n <= 15) return 2.33;
+        if (n <= 20) return 2.20; if (n <= 30) return 2.08; return 1.96;
+    }
+
+    window.onload = function() {
+        const dl = document.getElementById('solvent-list');
+        solventDB.sort((a,b) => a.name.localeCompare(b.name));
+        solventDB.forEach(s => dl.appendChild(new Option(s.name, s.name)));
+        
+        const container = document.getElementById('solvent-container');
+        for(let i=0; i<10; i++) {
+            container.innerHTML += `
+            <div class="row mb-2">
+                <div class="col-7"><input class="form-control sol-input trigger" list="solvent-list" placeholder="Solvent ${i+1}..."></div>
+                <div class="col-5"><div class="input-group"><input type="number" class="form-control vol-input trigger" placeholder="0"><span class="input-group-text">mL</span></div></div>
+            </div>`;
+        }
+
+        const solContainer = document.getElementById('solid-container');
+        for(let i=0; i<10; i++) {
+            solContainer.innerHTML += `
+            <div class="solid-row">
+                <input class="form-control solid-name trigger" style="width:35%" placeholder="Reagent ${i+1}">
+                <input type="number" class="form-control solid-mass trigger" style="width:20%" placeholder="g">
+                <select class="form-select solid-hz trigger" style="width:25%">
+                    <option value="0">None (0)</option>
+                    <option value="3">Low (3)</option>
+                    <option value="7">High (7)</option>
+                    <option value="10">Extr (10)</option>
+                </select>
+                <input type="number" class="form-control solid-cost trigger" style="width:20%" placeholder="$">
+            </div>`;
+        }
+
+        document.querySelectorAll('.trigger').forEach(el => { 
+            el.addEventListener('input', calculate); 
+            el.addEventListener('change', calculate); 
+        });
+        calculate();
+    };
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+        document.getElementById(t).classList.add('active');
+        document.querySelector(`.tab-btn[data-target="${t}"]`).classList.add('active');
+    }
+
+    let globalValidityStatus = "VALID"; // to use in PDF generation
+
+    function calculate() {
+        // --- RED ---
+        let spec = parseFloat(document.getElementById('r_spec').value);
+        let rec = parseFloat(document.getElementById('r_rec').value) || 100;
+        let rsd = parseFloat(document.getElementById('r_rsd').value) || 0;
+        let n = parseInt(document.getElementById('r_n').value) || 9;
+        
+        let k = getKFactor(n);
+        let margin = k * rsd; 
+        let bias = Math.abs(100 - rec);
+        let ti = bias + margin; 
+        let s_ti = (ti <= spec) ? 100 : (ti > spec * 2 ? 0 : 100 - ((ti - spec) / spec * 100));
+        let tiStatus = (ti <= spec) ? "<span class='text-success'>✅ PASS</span>" : "<span class='text-danger'>❌ FAIL</span>";
+        document.getElementById('r_ti_res').innerHTML = `<span>Total Error: ±${ti.toFixed(2)}%</span> <span>${tiStatus}</span>`;
+
+        let conc = parseFloat(document.getElementById('r_conc').value);
+        let prsd = Math.pow(2, (1 - 0.5 * Math.log10(conc)));
+        let horrat = (rsd == 0) ? 0 : rsd / prsd;
+        let s_hor = (horrat <= 1) ? 100 : (horrat >= 2 ? 0 : 100 - ((horrat - 1) * 100));
+        document.getElementById('r_hor_res').innerHTML = `<span>HorRat: ${horrat.toFixed(2)}</span> <span>${(horrat<=1)?'✅ OK':'⚠️ High'}</span>`;
+        
+        let s_stats = (s_ti * 0.5) + (s_hor * 0.5);
+        let s_matrix = parseFloat(document.getElementById('r_matrix').value);
+        let numAnalytes = parseInt(document.getElementById('r_analytes').value) || 1;
+        let s_multiplex = Math.min(100, 20 * numAnalytes); 
+
+        let r = (s_stats * 0.70) + (s_matrix * 0.20) + (s_multiplex * 0.10);
+
+        // --- GREEN ---
+        let load = 0, totalWaste = 0, chemCost = 0;
+        
+        let solIns = document.querySelectorAll('.sol-input');
+        let volIns = document.querySelectorAll('.vol-input');
+        for(let i=0; i<10; i++) {
+            let n = solIns[i].value, v = parseFloat(volIns[i].value) || 0;
+            if(n && v > 0) {
+                let s = solventDB.find(x => x.name === n);
+                let h = s ? s.hz : 5; let p = s ? s.price : 0;
+                load += v * h; 
+                totalWaste += v; 
+                chemCost += (v/1000) * p;
+            }
+        }
+
+        let sNames = document.querySelectorAll('.solid-name');
+        let sMass = document.querySelectorAll('.solid-mass');
+        let sHz = document.querySelectorAll('.solid-hz');
+        let sCost = document.querySelectorAll('.solid-cost');
+        
+        for(let i=0; i<10; i++) {
+            let m = parseFloat(sMass[i].value) || 0;
+            let h = parseFloat(sHz[i].value) || 0;
+            let c = parseFloat(sCost[i].value) || 0;
+            if(m > 0) {
+                load += m * h; 
+                totalWaste += m; 
+                chemCost += c;
+            }
+        }
+
+        let g = Math.max(0, Math.min(100, 100 * Math.exp(-load/600) - Math.min(20, totalWaste/100)));
+        document.getElementById('chem_summary').innerHTML = `<span>Waste: ${totalWaste.toFixed(0)} unit | Haz Load: ${load.toFixed(0)}</span> <span>Score: ${Math.round(g)}</span>`;
+
+        // --- BLUE ---
+        let op = parseFloat(document.getElementById('b_inst').value);
+        let rawTime = (parseFloat(document.getElementById('b_time').value)||0) + (parseFloat(document.getElementById('b_prep_time').value)||0);
+        let instCost = (rawTime/60)*op; 
+        let consumCost = parseFloat(document.getElementById('b_consumables').value) || 0;
+        
+        let rawTotalCost = instCost + chemCost + consumCost; 
+        
+        let timePerAnalyte = rawTime / numAnalytes;
+        let costPerAnalyte = rawTotalCost / numAnalytes;
+
+        let s_cost = Math.max(0, 100 * (1 - (costPerAnalyte / 100)));
+        let s_time = Math.max(0, 100 * (1 - (timePerAnalyte / 60))); 
+        let s_prep = parseFloat(document.getElementById('b_prep_type').value);
+        
+        let b = (s_cost * 0.40) + (s_time * 0.40) + (s_prep * 0.20);
+        document.getElementById('cost_summary').innerHTML = `<span>${timePerAnalyte.toFixed(1)} min | $${costPerAnalyte.toFixed(2)} /analyte</span> <span>Score: ${Math.round(b)}</span>`;
+
+        // --- VIOLET ---
+        let v = 0;
+        document.querySelectorAll('.violet-check:checked').forEach(c => v += parseFloat(c.value));
+        v = Math.min(100, v);
+
+        // --- TOTAL ---
+        let t = (r*0.45) + (g*0.25) + (b*0.20) + (v*0.10);
+        
+        updateUI('vis-red', 'disp-red', r, '#d32f2f');
+        updateUI('vis-green', 'disp-green', g, '#2e7d32');
+        updateUI('vis-blue', 'disp-blue', b, '#1565c0');
+        updateUI('vis-violet', 'disp-violet', v, '#7b1fa2');
+        document.getElementById('disp-total').innerText = t.toFixed(1);
+        
+        let idxSq = document.getElementById('index-sq');
+        let val = Math.round(128 + (t * 1.27)); 
+        idxSq.style.backgroundColor = `rgb(${val}, ${val}, ${val})`;
+
+        // --- NEW: THE THRESHOLD VALIDATOR ---
+        let badge = document.getElementById('validity-badge');
+        if (t < 60) {
+            badge.innerHTML = "❌ INVALID";
+            badge.style.backgroundColor = "white";
+            badge.style.color = "red";
+            globalValidityStatus = "INVALID (Score < 60)";
+        } else {
+            badge.innerHTML = "✅ VALID";
+            badge.style.backgroundColor = "white";
+            badge.style.color = "green";
+            globalValidityStatus = "ANALYTICALLY VALID";
+        }
+    }
+
+    function updateUI(bid, sid, sc, col) {
+        document.getElementById(sid).innerText = Math.round(sc);
+        document.getElementById(bid).style.background = `linear-gradient(0deg, ${col} ${sc}%, white ${sc}%)`;
+    }
+
+    async function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210; const pageHeight = 297; const margin = 15; const contentW = pageWidth - margin*2;
+        let y = 20;
+
+        // Page 1
+        pdf.setFontSize(20); pdf.setFont("helvetica", "bold");
+        pdf.text("Mosaic-WAC Report: Enough Thinking, Time for Decisions", pageWidth/2, y, {align:'center'});
+        y+=15;
+        let mName = document.getElementById('methodName').value || "Method";
+        pdf.setFontSize(14); pdf.setFont("helvetica", "normal");
+        pdf.text(`Method: ${mName}`, margin, y);
+        pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth-margin, y, {align:'right'});
+        y+=10;
+        
+        // Print the formal Validity Status
+        if(globalValidityStatus.includes("INVALID")) {
+            pdf.setTextColor(200, 0, 0);
+        } else {
+            pdf.setTextColor(0, 150, 0);
+        }
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Method Status: ${globalValidityStatus}`, margin, y);
+        pdf.setTextColor(0); // reset color
+        y+=15;
+
+        const wrap = document.getElementById('visualizer-wrapper');
+        const c1 = await html2canvas(wrap, {scale: 3, useCORS: true}); 
+        const img1 = c1.toDataURL('image/png');
+        const img1H = contentW * (c1.height / c1.width);
+        pdf.addImage(img1, 'PNG', margin, y, contentW, img1H);
+        
+        pdf.setFontSize(10); pdf.setTextColor(100);
+        pdf.text("Page 1 of 2: Visual Summary", pageWidth/2, pageHeight-10, {align:'center'});
+
+        // Page 2
+        pdf.addPage();
+        y = 20;
+        pdf.setFontSize(18); pdf.setTextColor(0); pdf.setFont("helvetica", "bold");
+        pdf.text("Analysis Breakdown", pageWidth/2, y, {align:'center'});
+        y+=20;
+
+        // Performance
+        pdf.setFontSize(14); pdf.setTextColor(200, 0, 0); 
+        pdf.text("PERFORMANCE (45%)", margin, y);
+        pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
+        
+        let acc = document.getElementById('r_rec').value;
+        let rsd = document.getElementById('r_rsd').value;
+        let numA = document.getElementById('r_analytes').value;
+        let mat = document.getElementById('r_matrix');
+        let matTxt = mat.options[mat.selectedIndex].text;
+        
+        y += 7;
+        pdf.text(`Limiting Analyte Accuracy: ${acc}% | Limiting RSD: ${rsd}%`, margin + 5, y);
+        y += 6;
+        pdf.text(`Analytes: ${numA} | Matrix: ${matTxt}`, margin + 5, y);
+        y += 6;
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Module Score: ${document.getElementById('disp-red').innerText}`, margin + 5, y);
+        y += 15;
+
+        // Greenness
+        pdf.setFontSize(14); pdf.setTextColor(0, 150, 0); 
+        pdf.text("GREENNESS (25%)", margin, y);
+        pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
+        y += 7;
+        
+        // Print Liquids
+        let hasLiq = false;
+        let lSol = document.querySelectorAll('.sol-input');
+        let lVol = document.querySelectorAll('.vol-input');
+        for(let i=0; i<10; i++) {
+            if(lSol[i].value && lVol[i].value > 0) {
+                if(!hasLiq) { pdf.text("Liquids:", margin+5, y); y+=6; hasLiq=true; }
+                pdf.text(`- ${lSol[i].value}: ${lVol[i].value}mL`, margin+10, y);
+                y+=5;
+            }
+        }
+
+        // Print Solids
+        let hasSolids = false;
+        let sNames = document.querySelectorAll('.solid-name');
+        let sMass = document.querySelectorAll('.solid-mass');
+        let sCost = document.querySelectorAll('.solid-cost');
+        for(let i=0; i<10; i++) {
+            if(sNames[i].value && sMass[i].value > 0) {
+                if(!hasSolids) { pdf.text("Solids:", margin+5, y); y+=6; hasSolids=true; }
+                pdf.text(`- ${sNames[i].value}: ${sMass[i].value}g ($${sCost[i].value||0})`, margin+10, y);
+                y+=5;
+            }
+        }
+        
+        if(!hasLiq && !hasSolids) { pdf.text("No Solvents/Solids Entered", margin+5, y); y+=6; }
+        
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Module Score: ${document.getElementById('disp-green').innerText}`, margin + 5, y);
+        y += 15;
+
+        // Practicality
+        pdf.setFontSize(14); pdf.setTextColor(0, 0, 200); 
+        pdf.text("PRACTICALITY (20%)", margin, y);
+        pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
+        let inst = document.getElementById('b_inst');
+        let instName = inst.options[inst.selectedIndex].text;
+        let costText = document.getElementById('cost_summary').innerText; 
+        y += 7;
+        pdf.text(`Instrument: ${instName}`, margin + 5, y);
+        y += 6;
+        let cons = document.getElementById('b_consumables').value;
+        pdf.text(`Consumables: $${cons} | ${costText}`, margin + 5, y);
+        y += 6;
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Module Score: ${document.getElementById('disp-blue').innerText}`, margin + 5, y);
+        y += 15;
+
+        // Innovation
+        pdf.setFontSize(14); pdf.setTextColor(120, 0, 120); 
+        pdf.text("INNOVATION (10%)", margin, y);
+        pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
+        y += 7;
+        
+        let innCount = 0;
+        if(document.getElementById('v1').checked) { pdf.text("- AI / Machine Learning / AQbD", margin+10, y); y+=5; innCount++; }
+        if(document.getElementById('v2').checked) { pdf.text("- Novel Materials (Nano/MOF)", margin+10, y); y+=5; innCount++; }
+        if(document.getElementById('v3').checked) { pdf.text("- Miniaturized System", margin+10, y); y+=5; innCount++; }
+        if(document.getElementById('v4').checked) { pdf.text("- Smartphone Detection", margin+10, y); y+=5; innCount++; }
+        if(innCount===0) { pdf.text("- None Selected", margin+10, y); y+=5; }
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Module Score: ${document.getElementById('disp-violet').innerText}`, margin + 5, y);
+
+        pdf.setFontSize(10); pdf.setTextColor(100);
+        pdf.text("Page 2 of 2: Detailed Data", pageWidth/2, pageHeight-10, {align:'center'});
+
+        pdf.save(`${mName}_Mosaic_Report.pdf`);
+    }
+</script>
+
+</body>
+</html>
