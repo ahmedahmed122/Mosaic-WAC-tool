@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -38,7 +38,7 @@
         /* --- INDEX SQUARE (Grey Scale) --- */
         .index-square { 
             position: relative; 
-            width: 140px; height: 120px; /* slightly taller to fit the badge */
+            width: 140px; height: 120px; 
             background: #808080; 
             border: 6px solid black; 
             border-radius: 16px; 
@@ -125,7 +125,7 @@
             <div class="custom-tabs">
                 <button class="tab-btn active" onclick="switchTab('red')" data-target="red">Red</button>
                 <button class="tab-btn" onclick="switchTab('green')" data-target="green">Green</button>
-                <button class="tab-btn active" onclick="switchTab('blue')" data-target="blue">Blue</button>
+                <button class="tab-btn" onclick="switchTab('blue')" data-target="blue">Blue</button>
                 <button class="tab-btn" onclick="switchTab('violet')" data-target="violet">Vio</button>
             </div>
             
@@ -135,6 +135,7 @@
                 <div class="mb-3">
                     <label class="form-label">1. Method Target (Spec Limit)</label>
                     <select id="r_spec" class="form-select trigger p-2">
+                        <option value="" disabled selected>Select Spec Limit...</option>
                         <option value="2.0">API / Assay (±2.0%)</option>
                         <option value="5.0">Finished Product (±5.0%)</option>
                         <option value="10.0">Related Substances (±10.0%)</option>
@@ -145,11 +146,12 @@
                 <div class="row mb-3">
                     <div class="col-6">
                         <label class="form-label">No. of Analytes</label>
-                        <input type="number" id="r_analytes" class="form-control trigger p-2" value="1" min="1">
+                        <input type="number" id="r_analytes" class="form-control trigger p-2" placeholder="e.g. 1" min="1">
                     </div>
                     <div class="col-6">
                         <label class="form-label">Matrix Complexity</label>
                         <select id="r_matrix" class="form-select trigger p-2">
+                            <option value="" disabled selected>Select Matrix...</option>
                             <option value="10">Pure Solvent</option>
                             <option value="40">Tablet / Powder</option>
                             <option value="70">Cream / Suspension</option>
@@ -161,29 +163,30 @@
                 <div class="row mb-3">
                     <div class="col-4">
                         <label class="form-label input-label-fix">Samples (n)</label>
-                        <input type="number" id="r_n" class="form-control trigger p-2" value="9" min="3">
+                        <input type="number" id="r_n" class="form-control trigger p-2" placeholder="e.g. 9" min="3">
                     </div>
                     <div class="col-4">
                         <label class="form-label input-label-fix" style="font-size:0.8rem">Limiting Acc%</label>
-                        <input type="number" id="r_rec" class="form-control trigger p-2" value="99.28">
+                        <input type="number" id="r_rec" class="form-control trigger p-2" placeholder="e.g. 99.2">
                     </div>
                     <div class="col-4">
                         <label class="form-label input-label-fix" style="font-size:0.8rem">Limiting RSD%</label>
-                        <input type="number" id="r_rsd" class="form-control trigger p-2" value="6.44">
+                        <input type="number" id="r_rsd" class="form-control trigger p-2" placeholder="e.g. 2.5">
                     </div>
                 </div>
                 
-                <div id="r_ti_res" class="result-box res-red mb-3">Calculating...</div>
+                <div id="r_ti_res" class="result-box res-red mb-3">Awaiting Inputs...</div>
                 
                 <div class="mb-3">
                     <label class="form-label">2. Precision Context (HorRat)</label>
                     <select id="r_conc" class="form-select trigger p-2">
+                        <option value="" disabled selected>Select Concentration...</option>
                         <option value="1">Major Component (100% - 1%)</option>
-                        <option value="0.001" selected>Minor Component (0.1% - ppm)</option>
+                        <option value="0.001">Minor Component (0.1% - ppm)</option>
                         <option value="0.000001">Trace / Residue (ppb)</option>
                     </select>
                 </div>
-                <div id="r_hor_res" class="result-box res-red">Calculating...</div>
+                <div id="r_hor_res" class="result-box res-red">Awaiting Inputs...</div>
             </div>
 
             <div id="green" class="tab-content">
@@ -206,7 +209,7 @@
                 </div>
                 <div id="solid-container" style="max-height: 250px; overflow-y: auto; padding-right: 5px;"></div>
 
-                <div class="result-box res-green mt-3" id="chem_summary">Calculating...</div>
+                <div class="result-box res-green mt-3" id="chem_summary">Awaiting Inputs...</div>
             </div>
 
             <div id="blue" class="tab-content">
@@ -214,6 +217,7 @@
                 <div class="mb-3">
                     <label class="form-label">1. Instrument Type</label>
                     <select id="b_inst" class="form-select trigger p-2">
+                        <option value="" disabled selected>Select Instrument...</option>
                         <option value="5">UV-Vis / Colorimeter</option>
                         <option value="5">Voltammetry / Potentiometry</option>
                         <option value="15">HPLC</option>
@@ -223,26 +227,27 @@
                     </select>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-6"><label class="form-label">Run Time (min)</label><input type="number" id="b_time" class="form-control trigger p-2" value="60"></div>
-                    <div class="col-6"><label class="form-label">Prep Time (min)</label><input type="number" id="b_prep_time" class="form-control trigger p-2" value="10"></div>
+                    <div class="col-6"><label class="form-label">Run Time (min)</label><input type="number" id="b_time" class="form-control trigger p-2" placeholder="e.g. 15"></div>
+                    <div class="col-6"><label class="form-label">Prep Time (min)</label><input type="number" id="b_prep_time" class="form-control trigger p-2" placeholder="e.g. 10"></div>
                 </div>
                 
                 <div class="mb-3">
                     <label class="form-label">Consumables / Amortized Parts ($)</label>
-                    <input type="number" id="b_consumables" class="form-control trigger p-2" placeholder="e.g. Column fraction or SPE price" value="0">
+                    <input type="number" id="b_consumables" class="form-control trigger p-2" placeholder="e.g. Column fraction or SPE price">
                     <small class="text-muted">Cost per run for columns, cartridges, strips, filters.</small>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">2. Sample Preparation</label>
                     <select id="b_prep_type" class="form-select trigger p-2">
+                        <option value="" disabled selected>Select Prep Type...</option>
                         <option value="100">Direct / Dilute</option>
                         <option value="80">Filtration / Centrifuge</option>
                         <option value="50">Extraction (SPE/LLE)</option>
                         <option value="20">Derivatization / Evaporation</option>
                     </select>
                 </div>
-                <div class="result-box res-blue" id="cost_summary">Calculating...</div>
+                <div class="result-box res-blue" id="cost_summary">Awaiting Inputs...</div>
             </div>
 
             <div id="violet" class="tab-content">
@@ -260,7 +265,7 @@
             <div id="visualizer-wrapper">
                 <div class="index-square" id="index-sq">
                     <span class="index-val" id="disp-total">0.0</span>
-                    <span id="validity-badge" class="validity-badge"></span>
+                    <span id="validity-badge" class="validity-badge">AWAITING DATA</span>
                 </div>
                 <div class="mosaic-container" id="visualizer-area">
                     <div class="wac-box box-left" id="vis-red"><span class="m-label">PERFORMANCE</span><span class="m-score" id="disp-red">0</span></div>
@@ -277,56 +282,23 @@
 
 <script>
     const solventDB = [
-        {name: "Water", hz: 0, price: 5},
-        {name: "Ethanol", hz: 1.0, price: 55},
-        {name: "1-Propanol", hz: 1.5, price: 60},
-        {name: "2-Propanol (IPA)", hz: 1.5, price: 45},
-        {name: "Acetone", hz: 1.2, price: 40},
-        {name: "Ethyl Acetate", hz: 1.5, price: 50},
-        {name: "Butyl Acetate", hz: 1.8, price: 55},
-        {name: "Anisole", hz: 2.0, price: 90},
-        {name: "Propylene Carbonate", hz: 1.5, price: 65},
-        {name: "Ethyl Lactate", hz: 1.5, price: 70},
-        {name: "Acetic Acid", hz: 2.0, price: 60},
-        {name: "Formic Acid", hz: 2.5, price: 80},
-        {name: "Glycerol", hz: 1.0, price: 40},
-        {name: "Dimethyl Carbonate", hz: 2.0, price: 65},
-        {name: "Methyl Ethyl Ketone (MEK)", hz: 3.0, price: 55},
-        {name: "Isobutanol", hz: 3.0, price: 60},
-        {name: "Methanol", hz: 3.5, price: 40},
-        {name: "Acetonitrile", hz: 4.5, price: 90},
-        {name: "Cyclohexane", hz: 4.0, price: 70},
-        {name: "Methylcyclohexane", hz: 4.0, price: 75},
-        {name: "Heptane", hz: 4.5, price: 90},
-        {name: "Methyl tert-butyl ether (MTBE)", hz: 4.0, price: 65},
-        {name: "Dimethyl Sulfoxide (DMSO)", hz: 3.0, price: 120},
-        {name: "2-Methyltetrahydrofuran (2-MeTHF)", hz: 3.5, price: 150},
-        {name: "p-Xylene", hz: 4.0, price: 60},
-        {name: "Isoamyl Alcohol", hz: 3.5, price: 70},
-        {name: "Benzyl Alcohol", hz: 3.0, price: 85},
-        {name: "Tetralin", hz: 4.5, price: 80},
-        {name: "Toluene", hz: 7.0, price: 50},
-        {name: "Xylene (mix)", hz: 7.0, price: 55},
-        {name: "Tetrahydrofuran (THF)", hz: 7.0, price: 100},
-        {name: "Pentane", hz: 6.5, price: 110},
-        {name: "Dichloromethane (DCM)", hz: 8.5, price: 50},
-        {name: "Diethyl Ether", hz: 7.5, price: 90},
-        {name: "Diisopropyl Ether", hz: 7.5, price: 100},
-        {name: "1,4-Dioxane", hz: 8.0, price: 120},
-        {name: "Dimethylformamide (DMF)", hz: 8.5, price: 85},
-        {name: "N-Methyl-2-pyrrolidone (NMP)", hz: 8.5, price: 95},
-        {name: "Pyridine", hz: 8.0, price: 180},
-        {name: "Triethylamine (TEA)", hz: 6.0, price: 120},
-        {name: "Chlorobenzene", hz: 7.5, price: 80},
-        {name: "Trifluoroacetic Acid (TFA)", hz: 7.0, price: 300},
-        {name: "Benzene", hz: 10.0, price: 150},
-        {name: "Chloroform", hz: 9.5, price: 110},
-        {name: "Carbon Tetrachloride", hz: 10.0, price: 200},
-        {name: "Hexane", hz: 8.5, price: 80},
-        {name: "1,2-Dichloroethane", hz: 10.0, price: 100},
-        {name: "Carbon Disulfide", hz: 10.0, price: 140},
-        {name: "Trichloroethylene", hz: 10.0, price: 120},
-        {name: "Nitrobenzene", hz: 9.0, price: 110}
+        {name: "Water", hz: 0, price: 5}, {name: "Ethanol", hz: 1.0, price: 55}, {name: "1-Propanol", hz: 1.5, price: 60},
+        {name: "2-Propanol (IPA)", hz: 1.5, price: 45}, {name: "Acetone", hz: 1.2, price: 40}, {name: "Ethyl Acetate", hz: 1.5, price: 50},
+        {name: "Butyl Acetate", hz: 1.8, price: 55}, {name: "Anisole", hz: 2.0, price: 90}, {name: "Propylene Carbonate", hz: 1.5, price: 65},
+        {name: "Ethyl Lactate", hz: 1.5, price: 70}, {name: "Acetic Acid", hz: 2.0, price: 60}, {name: "Formic Acid", hz: 2.5, price: 80},
+        {name: "Glycerol", hz: 1.0, price: 40}, {name: "Dimethyl Carbonate", hz: 2.0, price: 65}, {name: "Methyl Ethyl Ketone (MEK)", hz: 3.0, price: 55},
+        {name: "Isobutanol", hz: 3.0, price: 60}, {name: "Methanol", hz: 3.5, price: 40}, {name: "Acetonitrile", hz: 4.5, price: 90},
+        {name: "Cyclohexane", hz: 4.0, price: 70}, {name: "Methylcyclohexane", hz: 4.0, price: 75}, {name: "Heptane", hz: 4.5, price: 90},
+        {name: "Methyl tert-butyl ether (MTBE)", hz: 4.0, price: 65}, {name: "Dimethyl Sulfoxide (DMSO)", hz: 3.0, price: 120},
+        {name: "2-Methyltetrahydrofuran (2-MeTHF)", hz: 3.5, price: 150}, {name: "p-Xylene", hz: 4.0, price: 60}, {name: "Isoamyl Alcohol", hz: 3.5, price: 70},
+        {name: "Benzyl Alcohol", hz: 3.0, price: 85}, {name: "Tetralin", hz: 4.5, price: 80}, {name: "Toluene", hz: 7.0, price: 50},
+        {name: "Xylene (mix)", hz: 7.0, price: 55}, {name: "Tetrahydrofuran (THF)", hz: 7.0, price: 100}, {name: "Pentane", hz: 6.5, price: 110},
+        {name: "Dichloromethane (DCM)", hz: 8.5, price: 50}, {name: "Diethyl Ether", hz: 7.5, price: 90}, {name: "Diisopropyl Ether", hz: 7.5, price: 100},
+        {name: "1,4-Dioxane", hz: 8.0, price: 120}, {name: "Dimethylformamide (DMF)", hz: 8.5, price: 85}, {name: "N-Methyl-2-pyrrolidone (NMP)", hz: 8.5, price: 95},
+        {name: "Pyridine", hz: 8.0, price: 180}, {name: "Triethylamine (TEA)", hz: 6.0, price: 120}, {name: "Chlorobenzene", hz: 7.5, price: 80},
+        {name: "Trifluoroacetic Acid (TFA)", hz: 7.0, price: 300}, {name: "Benzene", hz: 10.0, price: 150}, {name: "Chloroform", hz: 9.5, price: 110},
+        {name: "Carbon Tetrachloride", hz: 10.0, price: 200}, {name: "Hexane", hz: 8.5, price: 80}, {name: "1,2-Dichloroethane", hz: 10.0, price: 100},
+        {name: "Carbon Disulfide", hz: 10.0, price: 140}, {name: "Trichloroethylene", hz: 10.0, price: 120}, {name: "Nitrobenzene", hz: 9.0, price: 110}
     ];
 
     function getKFactor(n) {
@@ -346,7 +318,7 @@
             container.innerHTML += `
             <div class="row mb-2">
                 <div class="col-7"><input class="form-control sol-input trigger" list="solvent-list" placeholder="Solvent ${i+1}..."></div>
-                <div class="col-5"><div class="input-group"><input type="number" class="form-control vol-input trigger" placeholder="0"><span class="input-group-text">mL</span></div></div>
+                <div class="col-5"><div class="input-group"><input type="number" class="form-control vol-input trigger" placeholder="mL"><span class="input-group-text">mL</span></div></div>
             </div>`;
         }
 
@@ -380,45 +352,49 @@
         document.querySelector(`.tab-btn[data-target="${t}"]`).classList.add('active');
     }
 
-    let globalValidityStatus = "VALID"; // to use in PDF generation
+    let globalValidityStatus = "AWAITING DATA";
 
     function calculate() {
         // --- RED ---
+        let r = 0;
         let spec = parseFloat(document.getElementById('r_spec').value);
-        let rec = parseFloat(document.getElementById('r_rec').value) || 100;
-        let rsd = parseFloat(document.getElementById('r_rsd').value) || 0;
-        let n = parseInt(document.getElementById('r_n').value) || 9;
-        
-        let k = getKFactor(n);
-        let margin = k * rsd; 
-        let bias = Math.abs(100 - rec);
-        let ti = bias + margin; 
-        let s_ti = (ti <= spec) ? 100 : (ti > spec * 2 ? 0 : 100 - ((ti - spec) / spec * 100));
-        let tiStatus = (ti <= spec) ? "<span class='text-success'>✅ PASS</span>" : "<span class='text-danger'>❌ FAIL</span>";
-        document.getElementById('r_ti_res').innerHTML = `<span>Total Error: ±${ti.toFixed(2)}%</span> <span>${tiStatus}</span>`;
-
+        let rec = parseFloat(document.getElementById('r_rec').value);
+        let rsd = parseFloat(document.getElementById('r_rsd').value);
+        let n = parseInt(document.getElementById('r_n').value);
         let conc = parseFloat(document.getElementById('r_conc').value);
-        let prsd = Math.pow(2, (1 - 0.5 * Math.log10(conc)));
-        let horrat = (rsd == 0) ? 0 : rsd / prsd;
-        let s_hor = (horrat <= 1) ? 100 : (horrat >= 2 ? 0 : 100 - ((horrat - 1) * 100));
-        document.getElementById('r_hor_res').innerHTML = `<span>HorRat: ${horrat.toFixed(2)}</span> <span>${(horrat<=1)?'✅ OK':'⚠️ High'}</span>`;
-        
-        let s_stats = (s_ti * 0.5) + (s_hor * 0.5);
         let s_matrix = parseFloat(document.getElementById('r_matrix').value);
         let numAnalytes = parseInt(document.getElementById('r_analytes').value) || 1;
-        let s_multiplex = Math.min(100, 20 * numAnalytes); 
 
-        let r = (s_stats * 0.70) + (s_matrix * 0.20) + (s_multiplex * 0.10);
+        if (!isNaN(spec) && !isNaN(rec) && !isNaN(rsd) && !isNaN(n) && !isNaN(conc) && !isNaN(s_matrix)) {
+            let k = getKFactor(n);
+            let margin = k * rsd; 
+            let bias = Math.abs(100 - rec);
+            let ti = bias + margin; 
+            let s_ti = (ti <= spec) ? 100 : (ti > spec * 2 ? 0 : 100 - ((ti - spec) / spec * 100));
+            let tiStatus = (ti <= spec) ? "<span class='text-success'>✅ PASS</span>" : "<span class='text-danger'>❌ FAIL</span>";
+            document.getElementById('r_ti_res').innerHTML = `<span>Total Error: ±${ti.toFixed(2)}%</span> <span>${tiStatus}</span>`;
+
+            let prsd = Math.pow(2, (1 - 0.5 * Math.log10(conc)));
+            let horrat = (rsd == 0) ? 0 : rsd / prsd;
+            let s_hor = (horrat <= 1) ? 100 : (horrat >= 2 ? 0 : 100 - ((horrat - 1) * 100));
+            document.getElementById('r_hor_res').innerHTML = `<span>HorRat: ${horrat.toFixed(2)}</span> <span>${(horrat<=1)?'✅ OK':'⚠️ High'}</span>`;
+            
+            let s_stats = (s_ti * 0.5) + (s_hor * 0.5);
+            let s_multiplex = Math.min(100, 20 * numAnalytes); 
+            r = (s_stats * 0.70) + (s_matrix * 0.20) + (s_multiplex * 0.10);
+        } else {
+            document.getElementById('r_ti_res').innerHTML = `<span>Awaiting inputs...</span>`;
+            document.getElementById('r_hor_res').innerHTML = `<span>Awaiting inputs...</span>`;
+        }
 
         // --- GREEN ---
         let load = 0, totalWaste = 0, chemCost = 0;
-        
         let solIns = document.querySelectorAll('.sol-input');
         let volIns = document.querySelectorAll('.vol-input');
         for(let i=0; i<10; i++) {
-            let n = solIns[i].value, v = parseFloat(volIns[i].value) || 0;
-            if(n && v > 0) {
-                let s = solventDB.find(x => x.name === n);
+            let nName = solIns[i].value, v = parseFloat(volIns[i].value) || 0;
+            if(nName && v > 0) {
+                let s = solventDB.find(x => x.name === nName);
                 let h = s ? s.hz : 5; let p = s ? s.price : 0;
                 load += v * h; 
                 totalWaste += v; 
@@ -430,7 +406,6 @@
         let sMass = document.querySelectorAll('.solid-mass');
         let sHz = document.querySelectorAll('.solid-hz');
         let sCost = document.querySelectorAll('.solid-cost');
-        
         for(let i=0; i<10; i++) {
             let m = parseFloat(sMass[i].value) || 0;
             let h = parseFloat(sHz[i].value) || 0;
@@ -442,26 +417,38 @@
             }
         }
 
-        let g = Math.max(0, Math.min(100, 100 * Math.exp(-load/600) - Math.min(20, totalWaste/100)));
-        document.getElementById('chem_summary').innerHTML = `<span>Waste: ${totalWaste.toFixed(0)} unit | Haz Load: ${load.toFixed(0)}</span> <span>Score: ${Math.round(g)}</span>`;
+        let g = 0;
+        if (totalWaste > 0 || load > 0) {
+            g = Math.max(0, Math.min(100, 100 * Math.exp(-load/600) - Math.min(20, totalWaste/100)));
+            document.getElementById('chem_summary').innerHTML = `<span>Waste: ${totalWaste.toFixed(0)} unit | Haz Load: ${load.toFixed(0)}</span> <span>Score: ${Math.round(g)}</span>`;
+        } else {
+            document.getElementById('chem_summary').innerHTML = `<span>Awaiting inputs...</span>`;
+        }
 
         // --- BLUE ---
+        let b = 0;
         let op = parseFloat(document.getElementById('b_inst').value);
-        let rawTime = (parseFloat(document.getElementById('b_time').value)||0) + (parseFloat(document.getElementById('b_prep_time').value)||0);
-        let instCost = (rawTime/60)*op; 
-        let consumCost = parseFloat(document.getElementById('b_consumables').value) || 0;
-        
-        let rawTotalCost = instCost + chemCost + consumCost; 
-        
-        let timePerAnalyte = rawTime / numAnalytes;
-        let costPerAnalyte = rawTotalCost / numAnalytes;
-
-        let s_cost = Math.max(0, 100 * (1 - (costPerAnalyte / 100)));
-        let s_time = Math.max(0, 100 * (1 - (timePerAnalyte / 60))); 
+        let b_time = parseFloat(document.getElementById('b_time').value);
+        let b_prep_time = parseFloat(document.getElementById('b_prep_time').value);
         let s_prep = parseFloat(document.getElementById('b_prep_type').value);
         
-        let b = (s_cost * 0.40) + (s_time * 0.40) + (s_prep * 0.20);
-        document.getElementById('cost_summary').innerHTML = `<span>${timePerAnalyte.toFixed(1)} min | $${costPerAnalyte.toFixed(2)} /analyte</span> <span>Score: ${Math.round(b)}</span>`;
+        if (!isNaN(op) && !isNaN(b_time) && !isNaN(b_prep_time) && !isNaN(s_prep)) {
+            let rawTime = b_time + b_prep_time;
+            let instCost = (rawTime/60)*op; 
+            let consumCost = parseFloat(document.getElementById('b_consumables').value) || 0;
+            let rawTotalCost = instCost + chemCost + consumCost; 
+            
+            let timePerAnalyte = rawTime / numAnalytes;
+            let costPerAnalyte = rawTotalCost / numAnalytes;
+
+            let s_cost = Math.max(0, 100 * (1 - (costPerAnalyte / 100)));
+            let s_time = Math.max(0, 100 * (1 - (timePerAnalyte / 60))); 
+            
+            b = (s_cost * 0.40) + (s_time * 0.40) + (s_prep * 0.20);
+            document.getElementById('cost_summary').innerHTML = `<span>${timePerAnalyte.toFixed(1)} min | $${costPerAnalyte.toFixed(2)} /analyte</span> <span>Score: ${Math.round(b)}</span>`;
+        } else {
+            document.getElementById('cost_summary').innerHTML = `<span>Awaiting inputs...</span>`;
+        }
 
         // --- VIOLET ---
         let v = 0;
@@ -481,17 +468,25 @@
         let val = Math.round(128 + (t * 1.27)); 
         idxSq.style.backgroundColor = `rgb(${val}, ${val}, ${val})`;
 
-        // --- NEW: THE THRESHOLD VALIDATOR ---
         let badge = document.getElementById('validity-badge');
-        if (t < 60) {
+        
+        if (r === 0 && g === 0 && b === 0 && v === 0) {
+            badge.innerHTML = "AWAITING DATA";
+            badge.style.backgroundColor = "transparent";
+            badge.style.color = "black";
+            badge.style.border = "none";
+            globalValidityStatus = "AWAITING DATA";
+        } else if (t < 60) {
             badge.innerHTML = "❌ INVALID";
             badge.style.backgroundColor = "white";
             badge.style.color = "red";
+            badge.style.border = "2px solid black";
             globalValidityStatus = "INVALID (Score < 60)";
         } else {
             badge.innerHTML = "✅ VALID";
             badge.style.backgroundColor = "white";
             badge.style.color = "green";
+            badge.style.border = "2px solid black";
             globalValidityStatus = "ANALYTICALLY VALID";
         }
     }
@@ -517,15 +512,16 @@
         pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth-margin, y, {align:'right'});
         y+=10;
         
-        // Print the formal Validity Status
         if(globalValidityStatus.includes("INVALID")) {
             pdf.setTextColor(200, 0, 0);
-        } else {
+        } else if(globalValidityStatus.includes("VALID")) {
             pdf.setTextColor(0, 150, 0);
+        } else {
+            pdf.setTextColor(100, 100, 100);
         }
         pdf.setFont("helvetica", "bold");
         pdf.text(`Method Status: ${globalValidityStatus}`, margin, y);
-        pdf.setTextColor(0); // reset color
+        pdf.setTextColor(0); 
         y+=15;
 
         const wrap = document.getElementById('visualizer-wrapper');
@@ -549,9 +545,9 @@
         pdf.text("PERFORMANCE (45%)", margin, y);
         pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
         
-        let acc = document.getElementById('r_rec').value;
-        let rsd = document.getElementById('r_rsd').value;
-        let numA = document.getElementById('r_analytes').value;
+        let acc = document.getElementById('r_rec').value || "N/A";
+        let rsd = document.getElementById('r_rsd').value || "N/A";
+        let numA = document.getElementById('r_analytes').value || "N/A";
         let mat = document.getElementById('r_matrix');
         let matTxt = mat.options[mat.selectedIndex].text;
         
@@ -570,7 +566,6 @@
         pdf.setTextColor(0); pdf.setFontSize(11); pdf.setFont("helvetica", "normal");
         y += 7;
         
-        // Print Liquids
         let hasLiq = false;
         let lSol = document.querySelectorAll('.sol-input');
         let lVol = document.querySelectorAll('.vol-input');
@@ -582,7 +577,6 @@
             }
         }
 
-        // Print Solids
         let hasSolids = false;
         let sNames = document.querySelectorAll('.solid-name');
         let sMass = document.querySelectorAll('.solid-mass');
@@ -611,7 +605,7 @@
         y += 7;
         pdf.text(`Instrument: ${instName}`, margin + 5, y);
         y += 6;
-        let cons = document.getElementById('b_consumables').value;
+        let cons = document.getElementById('b_consumables').value || "0";
         pdf.text(`Consumables: $${cons} | ${costText}`, margin + 5, y);
         y += 6;
         pdf.setFont("helvetica", "bold");
