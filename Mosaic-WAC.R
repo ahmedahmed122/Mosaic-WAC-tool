@@ -33,7 +33,7 @@ get_k_factor <- function(n) {
 }
 
 # ==============================================================================
-# 2. USER INTERFACE (Exact HTML/CSS Match)
+# 2. USER INTERFACE 
 # ==============================================================================
 ui <- fluidPage(
   tags$head(tags$style(HTML("
